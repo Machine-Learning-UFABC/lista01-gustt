@@ -1,11 +1,8 @@
 ---
 title: "Solução Lista 01"
 author: |
-        | Nome: Fulano de Tal
-        | E-mail: fdt@aluno.ufabc.edu.br
-        | Nome: Fulano de Tal
-        | E-mail: fdt@aluno.ufabc.edu.br
-        | (Não é preciso informar os RAs)
+        | Nome: Gustavo Cesar Gomes   
+        | E-mail: cesar.g@aluno.ufabc.edu.br
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: pdf_document
 ---
@@ -22,12 +19,70 @@ options(width =70)
 ```
 
 ## Exercício 01
+A) Um exemplo de aplicacao do aprendizado de maquina para problemas de classificacao e deteccao de Spam em e-mails, onde o algoritmo recebe um vetor de caracteristicas contendo palavras extraidas do email, como "gratis", "oferta", "ganhe", e retorne seu rotulo, podendo ser "spam" ou "nao-spam".
 
+B) O aprendizado de maquina pode ser usado para previsao de precos de imoveis, tendo como vetor de caracteristicas o tamanho da casa, localizacao, numero de quartos e retornando como resposta o preco do imovel.
+
+C) No caso de agrupamento, o aprendizado de maquina pode ser usado para, por exemplo, organizacao de documentos, os agrupando de acordo com a frequencia de palavras contidas neles, sendo esse o vetor de caracteristicas, facilitando a organizacao, busca e analise.
 
 ## Exercício 02
-
+A maldicao da dimensionalidade eh um problema que surge em muitos algoritmos de aprendizado de maquina, quando trabalhamos com muitas dimensoes, por exemplo, um vetor de caracteristicas muito grande.
+Um exemplo disso e quando precisamos da distancia entre dois pontos, para por exemplo, usar o kNN, a distancia dos pontos cresce exponencialmente conforme aumentamos as dimensoes.
 
 ## Exercício 03
+```{r}
+library(tibble)
+library(dplyr)
+x = c(x_1 = 1.6 ,x_2 = 49) 
+k = 5
+D <- tibble( x_1 = runif(100,1.4,2.0),
+x_2 = runif(100,40,200)) %>%
+   mutate(
+     imc = x_2/(x_1^2),
+     y = case_when(
+       imc < 18.5 ~ "Abaixo do peso",
+       imc >= 18.5 & imc < 25 ~ "Peso normal",
+       imc >= 25 & imc < 30 ~ "Sobrepeso",
+       imc >= 30 ~ "Obesidade"
+     )
+   )
+   
+knn <- function(k, x, D){
+  D %>%
+  mutate( dist = (x[1] - x_1)^2 + (x[2] - x_2)^2 ) %>%
+  arrange(dist)%>%
+  head(k)%>%
+  pull(y)%>%
+  table()%>%
+  sort(decreasing = TRUE)%>%
+  names()%>%
+  .[1]
+  }
+rotulo <- knn(k, x, D)
+print(rotulo)
+```
 
 
 ## Exercício 04
+```{r}
+library(tidyverse)
+data("iris")
+iris <- as_tibble(iris) %>%  
+  select(Petal.Length,Sepal.Length,Species) %>%  
+  rename( x_1 = Petal.Length, x_2 = Sepal.Length, y = Species) 
+
+calcula_acertos <- function (k, iris){
+  l_iris <- as.list(iris)
+  v_bool1 <- pmap_lgl(l_iris, function(x_1,x_2,y){
+    x <- c(x_1 = x_1, x_2 = x_2)
+    classe1<-knn(k,x,iris)
+    acerto_k1<-classe1 == y
+    return(acerto_k1)
+  })
+  sum(v_bool1)
+}
+calcula_acertos(10,iris)
+calcula_acertos(1,iris)
+```
+
+
